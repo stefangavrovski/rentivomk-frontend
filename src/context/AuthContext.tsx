@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useState, type ReactNode } from 'react';
 import type { AuthResponse, UserRole } from '../types';
 
 interface AuthUser {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { reservationApi } from '../api/reservations';
+import { useToast } from '../context/ToastContext';
 import type { ReservationDto } from '../types';
 import PageHeader from '../components/layout/PageHeader';
 import StatusBadge from '../components/ui/StatusBadge';
@@ -8,6 +9,7 @@ import ConfirmDialog from '../components/ui/ConfirmDialog';
 
 export default function MyReservationsPage() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const [reservations, setReservations] = useState<ReservationDto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -20,7 +22,6 @@ export default function MyReservationsPage() {
     setError('');
     try {
       const res = await reservationApi.getMy();
-      // Most recent first
       setReservations(res.data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
     } catch {
       setError('Failed to load your reservations.');
@@ -38,16 +39,18 @@ export default function MyReservationsPage() {
       await reservationApi.cancel(cancelTarget.id);
       setCancelTarget(null);
       await fetchReservations();
+      showToast('Reservation cancelled.');
     } catch (err: any) {
-      setError(err.response?.data?.error ?? 'Failed to cancel reservation.');
+      const msg = err.response?.data?.error ?? 'Failed to cancel reservation.';
+      setError(msg);
       setCancelTarget(null);
+      showToast(msg, 'error');
     } finally {
       setCancelLoading(false);
     }
   };
 
-  const canCancel = (r: ReservationDto) =>
-    r.status === 'Pending' || r.status === 'Approved';
+  const canCancel = (r: ReservationDto) => r.status === 'Pending' || r.status === 'Approved';
 
   const formatDate = (iso: string) =>
     new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -71,12 +74,9 @@ export default function MyReservationsPage() {
       />
 
       {error && (
-        <div className="mb-4 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
-          {error}
-        </div>
+        <div className="mb-4 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">{error}</div>
       )}
 
-      {/* Loading skeletons */}
       {loading && (
         <div className="space-y-3">
           {[...Array(4)].map((_, i) => (
@@ -92,7 +92,6 @@ export default function MyReservationsPage() {
         </div>
       )}
 
-      {/* Empty state */}
       {!loading && reservations.length === 0 && (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <div className="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center mb-4">
@@ -102,25 +101,17 @@ export default function MyReservationsPage() {
           </div>
           <p className="text-slate-400 font-medium">No reservations yet</p>
           <p className="text-slate-600 text-sm mt-1 mb-6">Browse available vehicles and make your first reservation.</p>
-          <button
-            onClick={() => navigate('/vehicles')}
-            className="px-5 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-sm transition-colors"
-          >
+          <button onClick={() => navigate('/vehicles')} className="px-5 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-sm transition-colors">
             Browse Vehicles
           </button>
         </div>
       )}
 
-      {/* Reservations list */}
       {!loading && reservations.length > 0 && (
         <div className="space-y-3">
           {reservations.map(r => (
-            <div
-              key={r.id}
-              className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-all"
-            >
+            <div key={r.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-all">
               <div className="flex items-start justify-between gap-4">
-                {/* Left: vehicle + dates */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <h3 className="text-white font-semibold text-base truncate">{r.vehicleName}</h3>
@@ -135,19 +126,12 @@ export default function MyReservationsPage() {
                     <span className="text-slate-600">·</span>
                     <span className="text-amber-400 font-medium">€{r.totalPrice.toFixed(2)}</span>
                   </div>
-                  <p className="text-slate-600 text-xs mt-1.5">
-                    Submitted {formatDate(r.createdAt)}
-                  </p>
+                  <p className="text-slate-600 text-xs mt-1.5">Submitted {formatDate(r.createdAt)}</p>
                 </div>
-
-                {/* Right: status + actions */}
                 <div className="flex flex-col items-end gap-2 shrink-0">
                   <StatusBadge status={r.status} />
                   {canCancel(r) && (
-                    <button
-                      onClick={() => setCancelTarget(r)}
-                      className="text-xs text-slate-500 hover:text-red-400 transition-colors"
-                    >
+                    <button onClick={() => setCancelTarget(r)} className="text-xs text-slate-500 hover:text-red-400 transition-colors">
                       Cancel
                     </button>
                   )}

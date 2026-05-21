@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
+import { useScrollToTop } from './hooks/useScrollToTop';
 import ProtectedRoute from './routes/ProtectedRoute';
 import AppLayout from './components/layout/AppLayout';
 import LoginPage from './pages/LoginPage';
@@ -10,14 +11,7 @@ import VehicleDetailPage from './pages/VehicleDetailPage';
 import MyReservationsPage from './pages/MyReservationsPage';
 import ReservationsPage from './pages/ReservationsPage';
 import UsersPage from './pages/UsersPage';
-
-function Placeholder({ label }: { label: string }) {
-  return (
-    <div className="flex items-center justify-center h-64 text-slate-400 text-lg">
-      {label} — coming soon
-    </div>
-  );
-}
+import DashboardPage from './pages/DashboardPage';
 
 function RootRedirect() {
   const { isAuthenticated } = useAuth();
@@ -25,6 +19,8 @@ function RootRedirect() {
 }
 
 export default function App() {
+  useScrollToTop();
+
   return (
     <Routes>
       <Route path="/" element={<RootRedirect />} />
@@ -34,7 +30,7 @@ export default function App() {
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
-          <Route path="/dashboard" element={<Placeholder label="Dashboard" />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/vehicles" element={<VehiclesPage />} />
           <Route path="/vehicles/:id" element={<VehicleDetailPage />} />
           <Route path="/reservations/my" element={<MyReservationsPage />} />

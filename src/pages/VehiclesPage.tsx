@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { vehicleApi } from '../api/vehicles';
 import { useAuth } from '../hooks/useAuth';
+import { useToast } from '../context/ToastContext';
 import type { VehicleDto, CreateVehicleDto, UpdateVehicleDto } from '../types';
 import PageHeader from '../components/layout/PageHeader';
 import StatusBadge from '../components/ui/StatusBadge';
@@ -13,10 +14,13 @@ type FilterTab = 'all' | 'available';
 export default function VehiclesPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { showToast } = useToast();
   const isAdmin = user?.role === 'Admin';
 
+  const initialFilter = searchParams.get('filter') === 'available' ? 'available' : 'all';
   const [vehicles, setVehicles] = useState<VehicleDto[]>([]);
-  const [filter, setFilter] = useState<FilterTab>('all');
+  const [filter, setFilter] = useState<FilterTab>(initialFilter);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -40,17 +44,22 @@ export default function VehiclesPage() {
     }
   };
 
-  useEffect(() => { fetchVehicles(); }, [filter]);
+  useEffect(() => {
+    setSearchParams(filter === 'available' ? { filter: 'available' } : {}, { replace: true });
+    fetchVehicles();
+  }, [filter]);
 
   const handleCreate = async (data: CreateVehicleDto | UpdateVehicleDto) => {
     await vehicleApi.create(data as CreateVehicleDto);
     await fetchVehicles();
+    showToast('Vehicle added successfully.');
   };
 
   const handleUpdate = async (data: CreateVehicleDto | UpdateVehicleDto) => {
     if (!editTarget) return;
     await vehicleApi.update(editTarget.id, data as UpdateVehicleDto);
     await fetchVehicles();
+    showToast('Vehicle updated successfully.');
   };
 
   const handleDelete = async () => {
@@ -60,9 +69,11 @@ export default function VehiclesPage() {
       await vehicleApi.delete(deleteTarget.id);
       setDeleteTarget(null);
       await fetchVehicles();
+      showToast('Vehicle deleted.');
     } catch (err: any) {
       setError(err.response?.data?.error ?? 'Failed to delete vehicle.');
       setDeleteTarget(null);
+      showToast(err.response?.data?.error ?? 'Failed to delete vehicle.', 'error');
     } finally {
       setDeleteLoading(false);
     }
@@ -92,16 +103,13 @@ export default function VehiclesPage() {
         }
       />
 
-      {/* Filter tabs */}
       <div className="flex gap-1 mb-6 bg-slate-900 border border-slate-800 rounded-xl p-1 w-fit">
         {(['all', 'available'] as FilterTab[]).map(tab => (
           <button
             key={tab}
             onClick={() => setFilter(tab)}
             className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all ${
-              filter === tab
-                ? 'bg-amber-500 text-slate-950'
-                : 'text-slate-400 hover:text-white'
+              filter === tab ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-white'
             }`}
           >
             {tab === 'all' ? 'All Vehicles' : 'Available Only'}
@@ -109,14 +117,12 @@ export default function VehiclesPage() {
         ))}
       </div>
 
-      {/* Error */}
       {error && (
         <div className="mb-4 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-sm">
           {error}
         </div>
       )}
 
-      {/* Loading */}
       {loading && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {[...Array(6)].map((_, i) => (
@@ -130,7 +136,6 @@ export default function VehiclesPage() {
         </div>
       )}
 
-      {/* Empty */}
       {!loading && vehicles.length === 0 && (
         <div className="flex flex-col items-center justify-center py-24 text-center">
           <div className="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center mb-4">
@@ -145,55 +150,33 @@ export default function VehiclesPage() {
         </div>
       )}
 
-      {/* Grid */}
       {!loading && vehicles.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {vehicles.map(v => (
-            <div
-              key={v.id}
-              className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-all group"
-            >
-              {/* Card header */}
+            <div key={v.id} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 hover:border-slate-700 transition-all group">
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <h3 className="text-white font-semibold text-base">
-                    {v.make} {v.model}
-                  </h3>
+                  <h3 className="text-white font-semibold text-base">{v.make} {v.model}</h3>
                   <p className="text-slate-500 text-sm">{v.year} · {v.category}</p>
                 </div>
                 <StatusBadge status={v.status} />
               </div>
-
-              {/* Description */}
               <p className="text-slate-400 text-sm mb-4 line-clamp-2">{v.description}</p>
-
-              {/* Price */}
               <div className="flex items-center justify-between pt-4 border-t border-slate-800">
                 <div>
                   <span className="text-amber-400 font-bold text-lg">€{v.pricePerDay}</span>
                   <span className="text-slate-500 text-sm"> / day</span>
                 </div>
-
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => navigate(`/vehicles/${v.id}`)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-700 hover:border-slate-600 transition-all"
-                  >
+                  <button onClick={() => navigate(`/vehicles/${v.id}`)} className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-700 hover:border-slate-600 transition-all">
                     Details
                   </button>
-
                   {isAdmin && (
                     <>
-                      <button
-                        onClick={() => openEdit(v)}
-                        className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 border border-slate-700 hover:border-amber-500/30 transition-all"
-                      >
+                      <button onClick={() => openEdit(v)} className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-amber-400 hover:bg-amber-500/10 border border-slate-700 hover:border-amber-500/30 transition-all">
                         Edit
                       </button>
-                      <button
-                        onClick={() => setDeleteTarget(v)}
-                        className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/10 border border-slate-700 hover:border-red-500/30 transition-all"
-                      >
+                      <button onClick={() => setDeleteTarget(v)} className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/10 border border-slate-700 hover:border-red-500/30 transition-all">
                         Delete
                       </button>
                     </>
@@ -205,15 +188,9 @@ export default function VehiclesPage() {
         </div>
       )}
 
-      {/* Modals */}
       {showForm && (
-        <VehicleFormModal
-          vehicle={editTarget}
-          onSubmit={editTarget ? handleUpdate : handleCreate}
-          onClose={closeForm}
-        />
+        <VehicleFormModal vehicle={editTarget} onSubmit={editTarget ? handleUpdate : handleCreate} onClose={closeForm} />
       )}
-
       {deleteTarget && (
         <ConfirmDialog
           title="Delete Vehicle"
