@@ -5,6 +5,8 @@ import AppLayout from './components/layout/AppLayout';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import UnauthorizedPage from './pages/UnauthorizedPage';
+import VehiclesPage from './pages/VehiclesPage';
+import VehicleDetailPage from './pages/VehicleDetailPage';
 
 function Placeholder({ label }: { label: string }) {
   return (
@@ -30,8 +32,8 @@ export default function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<Placeholder label="Dashboard" />} />
-          <Route path="/vehicles" element={<Placeholder label="Vehicles" />} />
-          <Route path="/vehicles/:id" element={<Placeholder label="Vehicle Detail" />} />
+          <Route path="/vehicles" element={<VehiclesPage />} />
+          <Route path="/vehicles/:id" element={<VehicleDetailPage />} />
           <Route path="/reservations" element={<Placeholder label="Reservations" />} />
           <Route path="/reservations/my" element={<Placeholder label="My Reservations" />} />
           <Route path="/users" element={<Placeholder label="Users" />} />
