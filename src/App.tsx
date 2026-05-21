@@ -7,6 +7,7 @@ import RegisterPage from './pages/RegisterPage';
 import UnauthorizedPage from './pages/UnauthorizedPage';
 import VehiclesPage from './pages/VehiclesPage';
 import VehicleDetailPage from './pages/VehicleDetailPage';
+import MyReservationsPage from './pages/MyReservationsPage';
 
 function Placeholder({ label }: { label: string }) {
   return (
@@ -34,8 +35,8 @@ export default function App() {
           <Route path="/dashboard" element={<Placeholder label="Dashboard" />} />
           <Route path="/vehicles" element={<VehiclesPage />} />
           <Route path="/vehicles/:id" element={<VehicleDetailPage />} />
+          <Route path="/reservations/my" element={<MyReservationsPage />} />
           <Route path="/reservations" element={<Placeholder label="Reservations" />} />
-          <Route path="/reservations/my" element={<Placeholder label="My Reservations" />} />
           <Route path="/users" element={<Placeholder label="Users" />} />
         </Route>
       </Route>

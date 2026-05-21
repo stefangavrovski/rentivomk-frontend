@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import type { VehicleDto } from '../types';
 import StatusBadge from '../components/ui/StatusBadge';
 import PageHeader from '../components/layout/PageHeader';
+import CreateReservationModal from '../components/reservations/CreateReservationModal';
 
 export default function VehicleDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -15,6 +16,8 @@ export default function VehicleDetailPage() {
   const [vehicle, setVehicle] = useState<VehicleDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showReserveModal, setShowReserveModal] = useState(false);
+  const [reserveSuccess, setReserveSuccess] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -96,11 +99,18 @@ export default function VehicleDetailPage() {
           <p className="text-slate-300 text-sm leading-relaxed">{vehicle.description}</p>
         </div>
 
+        {/* Reserve success message */}
+        {reserveSuccess && (
+          <div className="px-4 py-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm">
+            Reservation submitted successfully! You can view it under <button onClick={() => navigate('/reservations/my')} className="underline hover:text-emerald-300">My Reservations</button>.
+          </div>
+        )}
+
         {/* Reserve CTA for customers */}
-        {isCustomer && vehicle.status === 'Available' && (
+        {isCustomer && vehicle.status === 'Available' && !reserveSuccess && (
           <div className="pt-2 border-t border-slate-800">
             <button
-              onClick={() => navigate(`/reservations/new?vehicleId=${vehicle.id}`)}
+              onClick={() => setShowReserveModal(true)}
               className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm transition-colors shadow-lg shadow-amber-500/20"
             >
               Reserve This Vehicle
@@ -108,6 +118,14 @@ export default function VehicleDetailPage() {
           </div>
         )}
       </div>
+
+      {showReserveModal && (
+        <CreateReservationModal
+          vehicle={vehicle}
+          onClose={() => setShowReserveModal(false)}
+          onSuccess={() => setReserveSuccess(true)}
+        />
+      )}
     </div>
   );
 }
