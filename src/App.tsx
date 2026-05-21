@@ -9,6 +9,7 @@ import VehiclesPage from './pages/VehiclesPage';
 import VehicleDetailPage from './pages/VehicleDetailPage';
 import MyReservationsPage from './pages/MyReservationsPage';
 import ReservationsPage from './pages/ReservationsPage';
+import UsersPage from './pages/UsersPage';
 
 function Placeholder({ label }: { label: string }) {
   return (
@@ -41,7 +42,7 @@ export default function App() {
             <Route path="/reservations" element={<ReservationsPage />} />
           </Route>
           <Route element={<ProtectedRoute roles={['Admin']} />}>
-            <Route path="/users" element={<Placeholder label="Users" />} />
+            <Route path="/users" element={<UsersPage />} />
           </Route>
         </Route>
       </Route>
