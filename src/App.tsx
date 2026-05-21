@@ -1,13 +1,14 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './hooks/useAuth';
 import ProtectedRoute from './routes/ProtectedRoute';
+import AppLayout from './components/layout/AppLayout';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import UnauthorizedPage from './pages/UnauthorizedPage';
 
 function Placeholder({ label }: { label: string }) {
   return (
-    <div className="flex items-center justify-center h-screen bg-slate-950 text-white text-2xl">
+    <div className="flex items-center justify-center h-64 text-slate-400 text-lg">
       {label} — coming soon
     </div>
   );
@@ -27,11 +28,14 @@ export default function App() {
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
       <Route element={<ProtectedRoute />}>
-        <Route path="/dashboard" element={<Placeholder label="Dashboard" />} />
-        <Route path="/vehicles" element={<Placeholder label="Vehicles" />} />
-        <Route path="/vehicles/:id" element={<Placeholder label="Vehicle Detail" />} />
-        <Route path="/reservations" element={<Placeholder label="Reservations" />} />
-        <Route path="/users" element={<Placeholder label="Users" />} />
+        <Route element={<AppLayout />}>
+          <Route path="/dashboard" element={<Placeholder label="Dashboard" />} />
+          <Route path="/vehicles" element={<Placeholder label="Vehicles" />} />
+          <Route path="/vehicles/:id" element={<Placeholder label="Vehicle Detail" />} />
+          <Route path="/reservations" element={<Placeholder label="Reservations" />} />
+          <Route path="/reservations/my" element={<Placeholder label="My Reservations" />} />
+          <Route path="/users" element={<Placeholder label="Users" />} />
+        </Route>
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
