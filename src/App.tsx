@@ -8,6 +8,7 @@ import UnauthorizedPage from './pages/UnauthorizedPage';
 import VehiclesPage from './pages/VehiclesPage';
 import VehicleDetailPage from './pages/VehicleDetailPage';
 import MyReservationsPage from './pages/MyReservationsPage';
+import ReservationsPage from './pages/ReservationsPage';
 
 function Placeholder({ label }: { label: string }) {
   return (
@@ -36,8 +37,12 @@ export default function App() {
           <Route path="/vehicles" element={<VehiclesPage />} />
           <Route path="/vehicles/:id" element={<VehicleDetailPage />} />
           <Route path="/reservations/my" element={<MyReservationsPage />} />
-          <Route path="/reservations" element={<Placeholder label="Reservations" />} />
-          <Route path="/users" element={<Placeholder label="Users" />} />
+          <Route element={<ProtectedRoute roles={['Admin', 'Worker']} />}>
+            <Route path="/reservations" element={<ReservationsPage />} />
+          </Route>
+          <Route element={<ProtectedRoute roles={['Admin']} />}>
+            <Route path="/users" element={<Placeholder label="Users" />} />
+          </Route>
         </Route>
       </Route>
 
