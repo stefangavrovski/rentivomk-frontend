@@ -148,7 +148,7 @@ Create a `.env` file in the project root:
 VITE_API_URL=http://localhost:8080/api
 ```
 
-Point this to wherever your backend is running. For the deployed version, this would be your Azure API URL.
+Point this to wherever your backend is running. For the deployed version, this would be your Render API URL.
 
 ### Running the App
 
@@ -222,9 +222,9 @@ The frontend is structured around a few clear ideas:
 
 ## Deployment
 
-The frontend is deployed on **Vercel** and connects to the backend API deployed on **Azure**. Vercel handles builds automatically on every push to the main branch.
+The frontend is deployed on **Vercel** and connects to the backend API deployed on **Render**. Vercel handles builds automatically on every push to the main branch.
 
-The `VITE_API_URL` environment variable is configured in the Vercel project settings to point to the production Azure API URL.
+The `VITE_API_URL` environment variable is configured in the Vercel project settings to point to the production Render API URL.
 
 ---
 
